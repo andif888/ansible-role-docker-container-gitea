@@ -1,5 +1,63 @@
 ---
 - hosts: localhost
   remote_user: root
+  vars:
+    docker_container__base__dns_domain: "acme.org"
+    docker_container_gitea_mailer_host: "mail.{{ docker_container__base__dns_domain }}"
+    docker_container_gitea_mailer_from: "no-reply@{{ docker_container__base__dns_domain }}"
+    docker_container_gitea_mailer_username: "no-reply@{{ docker_container__base__dns_domain }}"
+    docker_container_gitea_mailer_password: "somepassword"
+
+    docker_network_traefik_name: "traefik_proxy_net"
+
+    docker_container_gitea_server_domain: "{{ docker_container_gitea_name }}.{{ docker_container__base__dns_domain }}"
+    
+    docker_container_gitea_env:
+      APP_NAME: "Gitea: git"
+      RUN_USER: "git"
+      GITEA__log__ROOT_PATH: "/data/gitea/log"
+      GITEA__repository__ROOT: "/data/git/repositories"
+      GITEA__server__DOMAIN: "{{ docker_container_gitea_server_domain }}"
+      GITEA__server__ROOT_URL: "https://{{ docker_container_gitea_server_domain }}"
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+      GITEA__mailer__ENABLED: "true"
+      GITEA__mailer__FROM: "{{ docker_container_gitea_mailer_from }}"
+      GITEA__mailer__MAILER_TYPE: "smtp"
+      GITEA__mailer__HOST: "{{ docker_container_gitea_mailer_host }}"
+      GITEA__mailer__IS_TLS: "true"
+      GITEA__mailer__USER: "{{ docker_container_gitea_mailer_username }}"
+      GITEA__mailer__PASSWD: "{{ docker_container_gitea_mailer_password }}"
+      GITEA__database__DB_TYPE: "sqlite3"
+      GITEA__database__PATH: "/data/gitea/gitea.db"
+      GITEA__webhook__SKIP_TLS_VERIFY: "true"
+      GITEA__webhook__ALLOWED_HOST_LIST: "*"
+
+    docker_container_gitea_labels:
+      traefik.enable: "true"
+      traefik.http.routers.gitea.rule: "Host(`{{ docker_container_gitea_server_domain }}`)"
+      traefik.http.routers.gitea.entrypoints: http
+      traefik.http.routers.gitea.service: gitea
+      #traefik.http.routers.gitea.middlewares: https_redirect_permanent@file
+      # HTTPS
+      traefik.http.routers.gitea_ssl.rule: "Host(`{{ docker_container_gitea_server_domain }}`)"
+      traefik.http.routers.gitea_ssl.entrypoints: https
+      traefik.http.routers.gitea_ssl.service: gitea
+      #traefik.http.routers.gitea_ssl.tls: "true"
+      # traefik.http.routers.gitea_ssl.tls.certResolver: le
+      traefik.http.routers.gitea_ssl.tls.options: nosni@file
+      # traefik.http.routers.gitea_ssl.middlewares: "hsts@file"
+      # Service
+      traefik.http.services.gitea.loadbalancer.server.port: "3000"
+
+    docker_container_gitea_volumes:
+      - "{{ docker_container_gitea_volume_dir }}/data:/data"
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+
+    docker_container_gitea_networks:
+      - name: "{{ docker_network_gitea_name }}"
+      - name: "{{ docker_network_traefik_name }}"
+
   roles:
     - ansible-role-docker-container-gitea
