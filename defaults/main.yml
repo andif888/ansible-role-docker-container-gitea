@@ -9,7 +9,7 @@
 docker_image_gitea_name: "gitea/gitea:latest"
 
 # @var docker_image_gitea_pull:description: Indicate to always pull the docker image.
-docker_image_gitea_pull: no
+docker_image_gitea_pull: false
 
 # ----------------
 # Docker container
