@@ -82,6 +82,15 @@ docker_container_gitea_networks:
 docker_container_gitea_ports:
   - "3000:3000"
 
+# @var docker_container_gitea_comparisons:description: >
+# Allows to specify how properties of existing containers are compared with module options 
+# to decide whether the container should be recreated / updated or not.
+# @end
+docker_container_gitea_comparisons:
+  image: strict
+  env: strict
+  volumes: strict
+
 # docker_container_gitea_auto_remove: no 
 # docker_container_gitea_detach: yes 
 # docker_container_gitea_env_file: "{{ docker_container_gitea_volume_dir }}/.env"
@@ -92,7 +101,6 @@ docker_container_gitea_ports:
 # docker_container_gitea_paused: no 
 # docker_container_gitea_privileged: no 
 # docker_container_gitea_pull: no
-# docker_container_gitea_purge_networks: yes 
 # docker_container_gitea_read_only: no 
 # docker_container_gitea_recreate: no
 # docker_container_gitea_restart: no
